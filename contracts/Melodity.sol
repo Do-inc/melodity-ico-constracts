@@ -24,8 +24,9 @@ contract Melodity is ERC20, ERC20Permit, ERC20Capped, AccessControl, ERC20Burnab
 
     mapping(address => Locks[]) private _locks;
 
-	uint256 ICO_START = 1642147200;
-	uint256 ICO_END = 1648771199;
+	// fake modified values here, this are for testing only
+	uint256 ICO_START = 0;
+	uint256 ICO_END = 9999999999;
 
     constructor() ERC20("Melodity", "MELD") ERC20Permit("Melodity") ERC20Capped(1000000000 * 10 ** decimals()) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);

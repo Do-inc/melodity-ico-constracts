@@ -78,32 +78,31 @@ abstract contract Referrable {
 			Total value of the bonus, may be used for minting calculations
 		)
 	 */
-	function computeReferralPrize(address _ref, uint256 _value) internal returns(uint256, uint256) {
-		require(
-			!alreadyReferred.contains(msg.sender),
-			"You have already used a referral"
-		);
-		
-		// check if the referrer address is active and compute the referral if it is
-		if (referrals[_ref].referrerPrize + referrals[_ref].referredPrize == baseReferral) {
+	function computeReferralPrize(address _ref, uint256 _value) internal returns(uint256, uint256) {	
+		if (
+			// check if the referrer address is active and compute the referral if it is
+			referrals[_ref].referrerPrize + referrals[_ref].referredPrize == baseReferral &&
+			
+			// check that no other referral have veen used before, if any referral have been used
+			// any new ref-code will not be considered
+			!alreadyReferred.contains(msg.sender)
+			) {
 			// insert the sender in the list of the referred user locking it from any other call
 			alreadyReferred.add(msg.sender);
 
-			uint256 referrerBonus = _value * referrals[_ref].referrerPrize / 10 ** 18;
-			uint256 referredBonus = _value * referrals[_ref].referredPrize / 10 ** 18;
+			uint256 referrerBonus = _value * referrals[_ref].referrerPrize / 10 ** 20; // 18 decimals + transposition from integer to percentage
+			uint256 referredBonus = _value * referrals[_ref].referredPrize / 10 ** 20; // 18 decimals + transposition from integer to percentage
 
 			referrals[_ref].prize += referrerBonus;
 
 			emit ReferralUsed(_ref, msg.sender);
 			return (referredBonus, referrerBonus + referredBonus);
 		}
-		// fallback to no bonus if the ref code is not active
+		// fallback to no bonus if the ref code is not active or already used a ref code
 		return (0, 0);
 	}
 
-	function redeemReferralPrize() virtual public {
-		revert("Unimplemented");
-	}
+	function redeemReferralPrize() virtual public;
 
 	function getReferrals() public view returns(Referral memory) {
 		return referrals[msg.sender];

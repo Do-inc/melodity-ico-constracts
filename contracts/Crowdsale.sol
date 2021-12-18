@@ -32,6 +32,8 @@ contract Crowdsale is Referrable, ReentrancyGuard {
         uint256 upperLimit;
     }
 
+	mapping(address => uint256) public toRefund;
+
 	/**
      * Network: Binance Smart Chain (BSC)
      * Melodity Bep20: 0x13E971De9181eeF7A4aEAEAA67552A6a4cc54f43
@@ -81,7 +83,7 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 		);
     }
 
-    receive() external payable {
+        receive() external payable {
         revert("Direct funds receiving not enabled, call 'buy' directly");
     }
 
@@ -100,14 +102,12 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 		);
 
         // compute the amount of token to buy based on the current rate
-        (uint256 tokensToBuy, uint256 exceedingEther) = _computeTokensAmount(msg.value);
+        (uint256 tokensToBuy, uint256 exceedingEther) = computeTokensAmount(msg.value);
 
 		// refund eventually exceeding eth
         if(exceedingEther > 0) {
-			// avoid impossibility to refund funds in case transaction are executed from a contract
-			// (like gnosis safe multisig), this is a workaround for the 2300 fixed gas problem
-            (bool refundSuccess, ) = msg.sender.call{value: exceedingEther}("");
-			require(refundSuccess, "Unable to refund exceeding ether");
+			uint256 _toRefund = toRefund[msg.sender] + exceedingEther;
+			toRefund[msg.sender] = _toRefund;
         }
 
 		// avoid impossibility to transfer funds to smart contracts (like gnosis safe multisig).
@@ -129,10 +129,6 @@ contract Crowdsale is Referrable, ReentrancyGuard {
     }    
 
     function computeTokensAmount(uint256 funds) public view returns(uint256, uint256) {
-        return _computeTokensAmount(funds);
-    }
-
-    function _computeTokensAmount(uint256 funds) private view returns(uint256, uint256) {
         uint256 futureMinted = distributed;
         uint256 tokensToBuy;
         uint256 currentRoundTokens;      
@@ -201,12 +197,9 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 		);
 		require(supply > 0, "Remaining supply already burned or all funds sold");
 		uint256 remainingSupply = supply;
-		supply = 0;
-
+		
         // burn all unsold MELD
-		if(remainingSupply > 0) {
-			melodity.burnUnsold(remainingSupply);
-		}
+		supply = 0;
 
 		emit Destroied(remainingSupply);
     }
@@ -226,6 +219,18 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 
 		melodity.insertLock(msg.sender, prize, 0);
 		emit ReferralPrizeRedeemed(msg.sender);
+	}
+
+	function refund() public nonReentrant {
+		require(toRefund[msg.sender] > 0, "Nothing to refund");
+
+		uint256 _refund = toRefund[msg.sender];
+		toRefund[msg.sender] = 0;
+
+		// avoid impossibility to refund funds in case transaction are executed from a contract
+		// (like gnosis safe multisig), this is a workaround for the 2300 fixed gas problem
+		(bool refundSuccess, ) = msg.sender.call{value: _refund}("");
+		require(refundSuccess, "Unable to refund exceeding ether");
 	}
 
     function isStarted() public view returns(bool) { return block.timestamp >= saleStart; }
