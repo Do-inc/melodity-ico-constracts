@@ -29,7 +29,7 @@ abstract contract Referrable {
 				This values allow for decimal values like 0.5%, the minimum is 0.[0 x 17 times]1 
 	 */
 	constructor(uint256 _baseReferral, uint256 _baseReferralDecimals) {
-		baseReferralDecimals = _baseReferralDecimals;
+		baseReferralDecimals = 18;
 		
 		// high precision (18 decimals) the base referral is already in the normalized form
 		// 1_[0 x 18 times] = 1%
