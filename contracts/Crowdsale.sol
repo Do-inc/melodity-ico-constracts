@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.10;
+pragma solidity 0.8.11;
 
 import "./IMelodity.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
@@ -18,7 +18,7 @@ contract Crowdsale is Referrable, ReentrancyGuard {
     // used to store the amount of funds actually available for the contract,
     // this value is created in order to avoid eventually running out of funds in case of a large number of
     // interactions occurring at the same time.
-    uint256 public supply = 350_000_000 ether;
+    uint256 public supply = 35_000_000 ether;
     uint256 public distributed;
 
     event Buy(address indexed from, uint256 amount);
@@ -48,35 +48,35 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 			PaymentTier({
 				rate: 6000,
 				lowerLimit: 0,
-				upperLimit: 25_000_000_000000000000000000
+				upperLimit: 2_500_000_000000000000000000
 			})
 		);
 		paymentTier.push(
 			PaymentTier({
 				rate: 3000,
-				lowerLimit: 25_000_000_000000000000000000,
-				upperLimit: 125_000_000_000000000000000000
+				lowerLimit: 2_500_000_000000000000000000,
+				upperLimit: 12_500_000_000000000000000000
 			})
 		);
 		paymentTier.push(
 			PaymentTier({
 				rate: 1500,
-				lowerLimit: 125_000_000_000000000000000000,
-				upperLimit: 225_000_000_000000000000000000
+				lowerLimit: 12_500_000_000000000000000000,
+				upperLimit: 22_500_000_000000000000000000
 			})
 		);
 		paymentTier.push(
 			PaymentTier({
 				rate: 750,
-				lowerLimit: 225_000_000_000000000000000000,
-				upperLimit: 325_000_000_000000000000000000
+				lowerLimit: 22_500_000_000000000000000000,
+				upperLimit: 32_500_000_000000000000000000
 			})
 		);
 		paymentTier.push(
 			PaymentTier({
 				rate: 375,
-				lowerLimit: 325_000_000_000000000000000000,
-				upperLimit: 350_000_000_000000000000000000
+				lowerLimit: 32_500_000_000000000000000000,
+				upperLimit: 35_000_000_000000000000000000
 			})
 		);
     }
@@ -122,9 +122,32 @@ contract Crowdsale is Referrable, ReentrancyGuard {
 		tokensToBuy += referredPrize;
         
         // Mint new tokens for each submission
-		melodity.saleLock(msg.sender, tokensToBuy);
+		saleLock(msg.sender, tokensToBuy);
         emit Buy(msg.sender, tokensToBuy);
     }    
+
+	function saleLock(address _account, uint256 _meldToLock) private {
+		// immediately release the 10% of the bought amount
+        uint256 immediatelyReleased = _meldToLock / 10; // * 10 / 100 = / 10
+
+        // 15% released after 3 months
+        uint256 m3Release = _meldToLock * 15 / 100; 
+
+        // 25% released after 9 months
+        uint256 m9Release = _meldToLock * 25 / 100; 
+        
+        // 25% released after 15 months
+        uint256 m15Release = _meldToLock * 25 / 100; 
+        
+        // 25% released after 21 months
+        uint256 m21Release = _meldToLock - (immediatelyReleased + m3Release + m9Release + m15Release); 
+
+		melodity.insertLock(_account, immediatelyReleased, 0);
+		melodity.insertLock(_account, m3Release, 90 days);
+		melodity.insertLock(_account, m9Release, 270 days);
+		melodity.insertLock(_account, m15Release, 450 days);
+		melodity.insertLock(_account, m21Release, 630 days);
+	}
 
     function computeTokensAmount(uint256 funds) public view returns(uint256, uint256) {
         uint256 futureMinted = distributed;

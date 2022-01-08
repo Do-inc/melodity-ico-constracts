@@ -11,7 +11,7 @@ const generateCrowdsale = async (
 	melodity,
 	start = 0,
 	end = 9999999999,
-	funds = ethers.utils.parseEther("350000000.0")
+	funds = ethers.utils.parseEther("35000000.0")
 ) => {
 	Crowdsale = await ethers.getContractFactory("TestableCrowdsale")
 	crowdsale = await Crowdsale.deploy(
@@ -80,20 +80,18 @@ describe("Crowdsale", function () {
 		// first conversion round => 1 BNB = 6000 MELD
 		/**
 		 * Lock the bought amount:
-		 *  - 10% released immediately (minted)
+		 *  - 10% immediately releasable
 		 *  - 15% released after 3 months
 		 *  - 25% released after 9 month (every 6 months starting from the third)
 		 *  - 25% released after 15 month (every 6 months starting from the third)
 		 *  - 25% released after 21 month (every 6 months starting from the third)
 		 */
-		expect(locks.length).to.equal(4)
-		expect(locks[0].locked).to.equals(ethers.utils.parseEther("900.0"))
-		expect(locks[1].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks.length).to.equal(5)
+		expect(locks[0].locked).to.equals(ethers.utils.parseEther("600.0"))
+		expect(locks[1].locked).to.equals(ethers.utils.parseEther("900.0"))
 		expect(locks[2].locked).to.equals(ethers.utils.parseEther("1500.0"))
 		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("600.0")
-		)
+		expect(locks[4].locked).to.equals(ethers.utils.parseEther("1500.0"))
 
 		// check that funds are proxied correctly
 		expect(await ethers.provider.getBalance(multisig_wallet)).to.equals(
@@ -102,7 +100,7 @@ describe("Crowdsale", function () {
 
 		// check supply is reduced and distributed is increased
 		expect(await crowdsale.supply()).to.equals(
-			ethers.utils.parseEther("349994000.0")
+			ethers.utils.parseEther("34994000.0")
 		)
 		expect(await crowdsale.distributed()).to.equals(
 			ethers.utils.parseEther("6000.0")
@@ -127,14 +125,12 @@ describe("Crowdsale", function () {
 		 *  - 25% released after 15 month (every 6 months starting from the third)
 		 *  - 25% released after 21 month (every 6 months starting from the third)
 		 */
-		expect(locks.length).to.equal(4)
-		expect(locks[0].locked).to.equals(ethers.utils.parseEther("900.0"))
-		expect(locks[1].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks.length).to.equal(5)
+		expect(locks[0].locked).to.equals(ethers.utils.parseEther("600.0"))
+		expect(locks[1].locked).to.equals(ethers.utils.parseEther("900.0"))
 		expect(locks[2].locked).to.equals(ethers.utils.parseEther("1500.0"))
 		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("600.0")
-		)
+		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1500.0"))
 
 		// check that funds are proxied correctly
 		expect(await ethers.provider.getBalance(multisig_wallet)).to.equals(
@@ -143,7 +139,7 @@ describe("Crowdsale", function () {
 
 		// check supply is reduced and distributed is increased
 		expect(await crowdsale.supply()).to.equals(
-			ethers.utils.parseEther("349994000.0")
+			ethers.utils.parseEther("34994000.0")
 		)
 		expect(await crowdsale.distributed()).to.equals(
 			ethers.utils.parseEther("6000.0")
@@ -172,14 +168,12 @@ describe("Crowdsale", function () {
 		 *  - 25% released after 15 month (every 6 months starting from the third)
 		 *  - 25% released after 21 month (every 6 months starting from the third)
 		 */
-		expect(locks.length).to.equal(4)
-		expect(locks[0].locked).to.equals(ethers.utils.parseEther("904.5"))
-		expect(locks[1].locked).to.equals(ethers.utils.parseEther("1507.5"))
+		expect(locks.length).to.equal(5)
+		expect(locks[0].locked).to.equals(ethers.utils.parseEther("603.0"))
+		expect(locks[1].locked).to.equals(ethers.utils.parseEther("904.5"))
 		expect(locks[2].locked).to.equals(ethers.utils.parseEther("1507.5"))
 		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1507.5"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("603.0")
-		)
+		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1507.5"))
 
 		// check that funds are proxied correctly
 		expect(await ethers.provider.getBalance(multisig_wallet)).to.equals(
@@ -188,7 +182,7 @@ describe("Crowdsale", function () {
 
 		// check supply is reduced and distributed is increased
 		expect(await crowdsale.supply()).to.equals(
-			ethers.utils.parseEther("349993970.0")
+			ethers.utils.parseEther("34993970.0")
 		)
 		expect(await crowdsale.distributed()).to.equals(
 			ethers.utils.parseEther("6030.0")
@@ -274,7 +268,7 @@ describe("Crowdsale", function () {
 	})
 	it("can call destroy after end", async function () {
 		crowdsale = await generateCrowdsale(melodity, 0, 0)
-		expect(await crowdsale.supply()).to.equals(ethers.utils.parseEther("350000000.0"))
+		expect(await crowdsale.supply()).to.equals(ethers.utils.parseEther("35000000.0"))
 		
 		await crowdsale.destroy()
 
@@ -295,14 +289,12 @@ describe("Crowdsale", function () {
 
 		let locks = await melodity.locksOf(owner.address)
 
-		expect(locks.length).to.equal(4)
-		expect(locks[0].locked).to.equals(ethers.utils.parseEther("904.5"))
-		expect(locks[1].locked).to.equals(ethers.utils.parseEther("1507.5"))
+		expect(locks.length).to.equal(5)
+		expect(locks[0].locked).to.equals(ethers.utils.parseEther("603.0"))
+		expect(locks[1].locked).to.equals(ethers.utils.parseEther("904.5"))
 		expect(locks[2].locked).to.equals(ethers.utils.parseEther("1507.5"))
 		expect(locks[3].locked).to.equals(ethers.utils.parseEther("1507.5"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("603.0")
-		)
+		expect(locks[4].locked).to.equals(ethers.utils.parseEther("1507.5"))
 
 		await crowdsale.buy(acc_1.address, {
 			value: ethers.utils.parseEther("1.0")
@@ -310,14 +302,12 @@ describe("Crowdsale", function () {
 
 		locks = await melodity.locksOf(owner.address)
 
-		expect(locks.length).to.equal(8)
-		expect(locks[4].locked).to.equals(ethers.utils.parseEther("900.0"))
-		expect(locks[5].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(locks[6].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks.length).to.equal(10)
+		expect(locks[5].locked).to.equals(ethers.utils.parseEther("600.0"))
+		expect(locks[6].locked).to.equals(ethers.utils.parseEther("900.0"))
 		expect(locks[7].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("1203.0")
-		)
+		expect(locks[8].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks[9].locked).to.equals(ethers.utils.parseEther("1500.0"))
 
 		await crowdsale.buy(acc_2.address, {
 			value: ethers.utils.parseEther("1.0")
@@ -325,14 +315,12 @@ describe("Crowdsale", function () {
 
 		locks = await melodity.locksOf(owner.address)
 
-		expect(locks.length).to.equal(12)
-		expect(locks[8].locked).to.equals(ethers.utils.parseEther("900.0"))
-		expect(locks[9].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(locks[10].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(locks[11].locked).to.equals(ethers.utils.parseEther("1500.0"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("1803.0")
-		)
+		expect(locks.length).to.equal(15)
+		expect(locks[10].locked).to.equals(ethers.utils.parseEther("600.0"))
+		expect(locks[11].locked).to.equals(ethers.utils.parseEther("900.0"))
+		expect(locks[12].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks[13].locked).to.equals(ethers.utils.parseEther("1500.0"))
+		expect(locks[14].locked).to.equals(ethers.utils.parseEther("1500.0"))
 	})
 	it("is tier computation correct", async function () {
 		let tokens_bought, exceeding_eth, keeper
@@ -348,29 +336,35 @@ describe("Crowdsale", function () {
 		expect(tokens_bought).to.equal(ethers.utils.parseEther("12000.0"))
 		expect(exceeding_eth).to.equal(ethers.utils.parseEther("0.0"))
 
-		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("4100.0"))
+		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("410.0"))
 		tokens_bought = keeper[0].toString()
 		exceeding_eth = keeper[1].toString()
-		expect(tokens_bought).to.equal(ethers.utils.parseEther("24600000.0")) // 24.6 mln
+		expect(tokens_bought).to.equal(ethers.utils.parseEther("2460000.0")) // 24.6 mln
 		expect(exceeding_eth).to.equal(ethers.utils.parseEther("0.0"))
 
-		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("4200.0"))
+		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("420.0"))
 		tokens_bought = keeper[0].toString()
 		exceeding_eth = keeper[1].toString()
-		expect(tokens_bought).to.equal("25100000000000000000002000") // 25.1 mln
+		expect(tokens_bought).to.equal("2510000000000000000002000") // 2.51 mln
 		expect(exceeding_eth).to.equal(ethers.utils.parseEther("0.0"))
 
-		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("4201.0"))
+		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("421.0"))
 		tokens_bought = keeper[0].toString()
 		exceeding_eth = keeper[1].toString()
-		expect(tokens_bought).to.equal("25103000000000000000002000") // 25.103 mln
+		expect(tokens_bought).to.equal("2513000000000000000002000") // 2.513 mln
 		expect(exceeding_eth).to.equal(ethers.utils.parseEther("0.0"))
+
+		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("3500.0"))
+		tokens_bought = keeper[0].toString()
+		exceeding_eth = keeper[1].toString()
+		expect(tokens_bought).to.equal("11750000000000000000002000") // 11.75 mln
+		expect(exceeding_eth).to.equal("0")
 
 		keeper = await crowdsale.computeTokensAmount(ethers.utils.parseEther("350000.0"))
 		tokens_bought = keeper[0].toString()
 		exceeding_eth = keeper[1].toString()
-		expect(tokens_bought).to.equal(ethers.utils.parseEther("350000000.0")) // 350 mln
-		expect(exceeding_eth).to.equal("45833333333333333333336")
+		expect(tokens_bought).to.equal(ethers.utils.parseEther("35000000.0")) // 35 mln
+		expect(exceeding_eth).to.equal("319583333333333333333336") // ~320k
 	})
 	it("refund exceeding ether", async function () {		
 		let old_balance = await ethers.provider.getBalance(owner.address)
@@ -381,17 +375,15 @@ describe("Crowdsale", function () {
 
 		let locks = await melodity.locksOf(owner.address)
 
-		expect(locks.length).to.equal(4)
-		expect(locks[0].locked).to.equals(ethers.utils.parseEther("52500000.0"))
-		expect(locks[1].locked).to.equals(ethers.utils.parseEther("87500000.0"))
-		expect(locks[2].locked).to.equals(ethers.utils.parseEther("87500000.0"))
-		expect(locks[3].locked).to.equals(ethers.utils.parseEther("87500000.0"))
-		expect(await melodity.balanceOf(owner.address)).to.equals(
-			ethers.utils.parseEther("35000000.0")
-		)
+		expect(locks.length).to.equal(5)
+		expect(locks[0].locked).to.equals(ethers.utils.parseEther("3500000.0"))
+		expect(locks[1].locked).to.equals(ethers.utils.parseEther("5250000.0"))
+		expect(locks[2].locked).to.equals(ethers.utils.parseEther("8750000.0"))
+		expect(locks[3].locked).to.equals(ethers.utils.parseEther("8750000.0"))
+		expect(locks[4].locked).to.equals(ethers.utils.parseEther("8750000.0"))
 		
-		expect(await crowdsale.toRefund(owner.address)).to.equals("45833333333333333333336")
-		expect(await ethers.provider.getBalance(crowdsale.address)).equals("45833333333333333333336")
+		expect(await crowdsale.toRefund(owner.address)).to.equals("319583333333333333333336")
+		expect(await ethers.provider.getBalance(crowdsale.address)).equals("319583333333333333333336")
 	
 		await crowdsale.refund()
 

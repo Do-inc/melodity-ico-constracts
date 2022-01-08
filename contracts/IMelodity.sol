@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.10;
+pragma solidity 0.8.11;
 
 interface IMelodity {
     /**
@@ -12,8 +12,4 @@ interface IMelodity {
         uint256 amount,
         uint256 relativeReleaseTime
     ) external;
-
-    function saleLock(address account, uint256 amount) external;
-
-	function burnUnsold(uint256 amountToBurn) external;
 }
