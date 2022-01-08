@@ -49,7 +49,7 @@ abstract contract Referrable {
 			"All the referral percentage must be distributed (100%)"
 		);
 		require(
-			referrals[msg.sender].referrerPrize == 0 || referrals[msg.sender].referredPrize == 0,
+			referrals[msg.sender].referrerPrize == 0 && referrals[msg.sender].referredPrize == 0,
 			"Referral already initialized, unable to edit it"
 		);
 		require(
